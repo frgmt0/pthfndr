@@ -25,18 +25,24 @@ class InteractionManager:
         feature_type = self.current_feature["type"]
         variant = self.current_feature["variant"]
         
-        # Default interaction options based on feature type
-        default_interactions = {
-            "fish": ["examine", "catch", "feed"],
-            "creature": ["examine", "follow", "call"],
-            "water": ["examine", "drink", "swim"],
-            "tree": ["examine", "climb", "rest"],
-            "rock": ["examine", "climb", "search"],
-            "plant": ["examine", "harvest", "smell"]
-        }
-        
-        # Get available interactions
-        interactions = default_interactions.get(feature_type, ["examine"])
+        # Get available interactions based on feature type
+        if feature_type == "resource":
+            # For resources, get interactions from resource definitions
+            resource_def = get_resource_definition(variant)
+            interactions = list(resource_def.get("interactions", {}).keys())
+            if not interactions:
+                interactions = ["examine"]
+        else:
+            # Default interaction options based on feature type
+            default_interactions = {
+                "fish": ["examine", "catch", "feed"],
+                "creature": ["examine", "follow", "call"],
+                "water": ["examine", "drink", "swim"],
+                "tree": ["examine", "climb", "rest"],
+                "rock": ["examine", "climb", "search"],
+                "plant": ["examine", "harvest", "smell"]
+            }
+            interactions = default_interactions.get(feature_type, ["examine"])
         
         # Build prompt
         prompt = f"\n{Fore.CYAN}Interacting with {variant} {feature_type}{Style.RESET_ALL}\n"
@@ -59,25 +65,26 @@ class InteractionManager:
         feature_type = self.current_feature["type"]
         variant = self.current_feature["variant"]
         
-        # Try structure interaction first
-        structure_result = get_structure_interaction(
-            feature_type,
-            action,
-            variant,
-            self.current_feature.get("condition")
-        )
-        if structure_result != "You cannot interact with this structure that way.":
-            return structure_result
-            
-        # Try resource interaction
-        resource_result = get_resource_interaction(
-            feature_type,
-            action,
-            variant,
-            self.current_feature.get("quality")
-        )
-        if resource_result != "You cannot interact with this resource that way.":
-            return resource_result
+        # For resources, handle differently
+        if feature_type == "resource":
+            resource_result = get_resource_interaction(
+                variant,  # For resources, the variant is the resource type
+                action,
+                variant,
+                self.current_feature.get("quality")
+            )
+            if resource_result != "You cannot interact with this resource that way.":
+                return resource_result
+        else:
+            # Try structure interaction first
+            structure_result = get_structure_interaction(
+                feature_type,
+                action,
+                variant,
+                self.current_feature.get("condition")
+            )
+            if structure_result != "You cannot interact with this structure that way.":
+                return structure_result
             
         # Default interactions based on feature type
         default_interactions = {
