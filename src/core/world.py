@@ -10,13 +10,14 @@ class WorldGenerator:
         self.elevation_noise = OpenSimplex(seed=self.seed)
         self.moisture_noise = OpenSimplex(seed=self.seed + 1)
         
-        # Configure noise parameters
-        self.ELEVATION_SCALE = 0.05  # Increased for more terrain variation
-        self.MOISTURE_SCALE = 0.03   # Increased for more moisture variation
+        # Configure multi-layered noise parameters
+        self.ELEVATION_SCALES = [0.02, 0.04, 0.08]  # Multiple scales for varied terrain
+        self.MOISTURE_SCALES = [0.015, 0.03, 0.06]  # Multiple scales for varied moisture
+        self.WEIGHTS = [0.5, 0.3, 0.2]  # Weights for each scale layer
         
         # Add some random offset to prevent grid-like patterns
-        self.x_offset = random.uniform(-1000, 1000)
-        self.y_offset = random.uniform(-1000, 1000)
+        self.x_offset = random.uniform(-2000, 2000)
+        self.y_offset = random.uniform(-2000, 2000)
         
         # Biome determination matrix [elevation][moisture]
         self.BIOME_MATRIX = {
@@ -38,22 +39,27 @@ class WorldGenerator:
         }
 
     def _get_elevation(self, x: int, y: int) -> float:
-        """Generate elevation value for coordinates"""
-        # Add offsets and multiple noise layers for more variation
-        primary = self.elevation_noise.noise2((x + self.x_offset) * self.ELEVATION_SCALE, 
-                                            (y + self.y_offset) * self.ELEVATION_SCALE)
-        secondary = self.elevation_noise.noise2((x + self.x_offset) * self.ELEVATION_SCALE * 2, 
-                                              (y + self.y_offset) * self.ELEVATION_SCALE * 2) * 0.5
-        return (primary + secondary) / 1.5
+        """Generate elevation value using multiple noise layers"""
+        elevation = 0
+        for scale, weight in zip(self.ELEVATION_SCALES, self.WEIGHTS):
+            elevation += weight * self.elevation_noise.noise2(
+                (x + self.x_offset) * scale,
+                (y + self.y_offset) * scale
+            )
+        # Normalize to [-1, 1] range
+        return elevation / sum(self.WEIGHTS)
 
     def _get_moisture(self, x: int, y: int) -> float:
-        """Generate moisture value for coordinates"""
-        # Add offsets and multiple noise layers for more variation
-        primary = self.moisture_noise.noise2((x + self.x_offset) * self.MOISTURE_SCALE,
-                                           (y + self.y_offset) * self.MOISTURE_SCALE)
-        secondary = self.moisture_noise.noise2((x + self.x_offset) * self.MOISTURE_SCALE * 2,
-                                             (y + self.y_offset) * self.MOISTURE_SCALE * 2) * 0.5
-        return (primary + secondary) / 1.5
+        """Generate moisture value using multiple noise layers"""
+        moisture = 0
+        for scale, weight in zip(self.MOISTURE_SCALES, self.WEIGHTS):
+            moisture += weight * self.moisture_noise.noise2(
+                (x + self.x_offset) * scale,
+                (y + self.y_offset) * scale
+            )
+        # Add some local variation
+        local_variation = random.uniform(-0.1, 0.1)
+        return (moisture / sum(self.WEIGHTS)) + local_variation
 
     def _determine_biome(self, x: int, y: int) -> BiomeType:
         """Determine biome based on elevation and moisture with some randomization"""
