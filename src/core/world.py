@@ -92,37 +92,68 @@ class WorldGenerator:
         
         biome_features = {
             BiomeType.FOREST: [
-                {"type": "tree", "variant": random.choice(["oak", "pine", "birch", "maple"])},
-                {"type": "bush", "variant": random.choice(["berry", "flower", "thorny"])},
-                {"type": "mushroom", "variant": random.choice(["red", "brown", "spotted"])}
+                {"type": "tree", "variant": random.choice(["oak", "pine", "birch", "maple", "ancient", "magical", "hollow"])},
+                {"type": "bush", "variant": random.choice(["berry", "flower", "thorny", "healing", "poisonous", "glowing"])},
+                {"type": "mushroom", "variant": random.choice(["red", "brown", "spotted", "giant", "luminous", "medicinal"])},
+                {"type": "landmark", "variant": random.choice(["shrine", "statue", "ruins", "camp", "cave"])},
+                {"type": "creature_nest", "variant": random.choice(["bird", "squirrel", "fox", "owl", "fairy"])},
+                {"type": "resource", "variant": random.choice(["herbs", "fruits", "wood", "flowers", "honey"])}
             ],
             BiomeType.MOUNTAIN: [
-                {"type": "rock", "variant": random.choice(["boulder", "cliff", "cave"])},
-                {"type": "mineral", "variant": random.choice(["crystal", "ore", "gems"])}
+                {"type": "rock", "variant": random.choice(["boulder", "cliff", "cave", "arch", "peak", "crystal"])},
+                {"type": "mineral", "variant": random.choice(["crystal", "ore", "gems", "gold", "silver", "diamond"])},
+                {"type": "landmark", "variant": random.choice(["shrine", "mine", "bridge", "watchtower", "tomb"])},
+                {"type": "creature_nest", "variant": random.choice(["eagle", "goat", "dragon", "griffin", "yeti"])},
+                {"type": "weather", "variant": random.choice(["mist", "storm", "snow", "wind", "clear"])},
+                {"type": "path", "variant": random.choice(["steep", "winding", "dangerous", "hidden", "ancient"])}
             ],
             BiomeType.PLAINS: [
-                {"type": "grass", "variant": random.choice(["tall", "flowering", "wild"])},
-                {"type": "creature", "variant": random.choice(["rabbit", "deer", "bird"])}
+                {"type": "grass", "variant": random.choice(["tall", "flowering", "wild", "golden", "magical", "whispering"])},
+                {"type": "creature", "variant": random.choice(["rabbit", "deer", "bird", "unicorn", "wolf", "fairy"])},
+                {"type": "landmark", "variant": random.choice(["well", "stone_circle", "camp", "village", "tower"])},
+                {"type": "water", "variant": random.choice(["stream", "pond", "spring", "oasis", "waterfall"])},
+                {"type": "resource", "variant": random.choice(["herbs", "berries", "flowers", "grain", "cotton"])},
+                {"type": "structure", "variant": random.choice(["fence", "bridge", "signpost", "shelter", "ruins"])}
             ],
             BiomeType.DESERT: [
-                {"type": "cactus", "variant": random.choice(["barrel", "saguaro", "prickly"])},
-                {"type": "dune", "variant": random.choice(["rolling", "steep", "windswept"])}
+                {"type": "cactus", "variant": random.choice(["barrel", "saguaro", "prickly", "flowering", "giant", "rare"])},
+                {"type": "dune", "variant": random.choice(["rolling", "steep", "windswept", "shifting", "massive", "golden"])},
+                {"type": "landmark", "variant": random.choice(["oasis", "ruins", "pyramid", "temple", "mirage"])},
+                {"type": "creature_nest", "variant": random.choice(["scorpion", "snake", "lizard", "phoenix", "djinn"])},
+                {"type": "resource", "variant": random.choice(["water", "dates", "minerals", "herbs", "crystals"])},
+                {"type": "structure", "variant": random.choice(["well", "shelter", "camp", "tomb", "trading_post"])}
             ],
             BiomeType.SWAMP: [
-                {"type": "water", "variant": random.choice(["pool", "marsh", "bog"])},
-                {"type": "vegetation", "variant": random.choice(["vine", "moss", "reed"])}
+                {"type": "water", "variant": random.choice(["pool", "marsh", "bog", "river", "quicksand", "mystic_pool"])},
+                {"type": "vegetation", "variant": random.choice(["vine", "moss", "reed", "mangrove", "mushroom", "willow"])},
+                {"type": "landmark", "variant": random.choice(["hut", "ruins", "altar", "bridge", "statue"])},
+                {"type": "creature_nest", "variant": random.choice(["frog", "snake", "bird", "witch", "spirit"])},
+                {"type": "resource", "variant": random.choice(["herbs", "roots", "fish", "magic_essence", "poison"])},
+                {"type": "atmosphere", "variant": random.choice(["fog", "mist", "glow", "darkness", "whispers"])}
             ],
             BiomeType.TUNDRA: [
-                {"type": "ice", "variant": random.choice(["formation", "sheet", "crystal"])},
-                {"type": "rock", "variant": random.choice(["frozen", "snow-covered", "weathered"])}
+                {"type": "ice", "variant": random.choice(["formation", "sheet", "crystal", "cave", "bridge", "sculpture"])},
+                {"type": "rock", "variant": random.choice(["frozen", "snow-covered", "weathered", "crystal", "magical"])},
+                {"type": "landmark", "variant": random.choice(["cave", "shrine", "monolith", "settlement", "beacon"])},
+                {"type": "creature_nest", "variant": random.choice(["penguin", "seal", "bear", "wolf", "frost_giant"])},
+                {"type": "weather", "variant": random.choice(["blizzard", "aurora", "clear", "storm", "whiteout"])},
+                {"type": "resource", "variant": random.choice(["ice_crystal", "fur", "fish", "magic_ice", "minerals"])}
             ]
         }
         
-        # 60% chance of having 1 feature, 30% chance of 2 features
-        if feature_chance < 0.6:
+        # Enhanced feature generation:
+        # 40% chance: 1 feature
+        # 30% chance: 2 features
+        # 20% chance: 3 features
+        # 10% chance: 4 features
+        if feature_chance < 0.4:
             features.append(random.choice(biome_features.get(biome, [])))
-        elif feature_chance < 0.9:
+        elif feature_chance < 0.7:
             features.extend(random.sample(biome_features.get(biome, []), 2))
+        elif feature_chance < 0.9:
+            features.extend(random.sample(biome_features.get(biome, []), 3))
+        else:
+            features.extend(random.sample(biome_features.get(biome, []), 4))
         return features
 
     def _generate_description(self, biome: BiomeType, features: list) -> str:
