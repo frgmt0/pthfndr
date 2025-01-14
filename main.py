@@ -72,11 +72,28 @@ async def play_game():
             elif command[0] == "interact" and len(command) >= 3:
                 target = command[1]
                 variant = command[2]
-                result, updates = await game_manager.process_action("interact", {
-                    "target": target,
-                    "variant": variant
-                })
-                print(f"\n{result}")
+                
+                # Start interaction mode
+                result = await game_manager.interaction_manager.start_interaction(target, variant)
+                print(result)
+                
+                # Enter interaction loop
+                while True:
+                    try:
+                        interaction_command = input(f"\n{Fore.GREEN}What would you like to do? {Style.RESET_ALL}").lower()
+                        
+                        if not interaction_command:
+                            continue
+                            
+                        result = await game_manager.interaction_manager.process_interaction(interaction_command)
+                        print(f"\n{result}")
+                        
+                        if interaction_command == "leave" or result == "Ending interaction.":
+                            break
+                            
+                    except Exception as e:
+                        print(f"Interaction error: {e}")
+                        break
                 
             elif command[0] == "inventory":
                 items = await game_manager.get_inventory()

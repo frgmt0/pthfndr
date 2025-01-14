@@ -160,6 +160,14 @@ class GameManager:
         mcts = MCTSManager(self)
         return await mcts.select_action(self.current_game_state)
 
+    def __init__(self, seed: Optional[int] = None):
+        """Initialize the game manager with optional seed"""
+        self.seed = seed or random.randint(0, 1000000)
+        self.world_generator = WorldGenerator(seed=self.seed)
+        self.current_game_state: Optional[GameState] = None
+        from src.core.interactions import InteractionManager
+        self.interaction_manager = InteractionManager(self)
+
     async def process_action(self, action_type: str, params: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         """Process a player action and return the result"""
         if not self.current_game_state:
