@@ -11,8 +11,12 @@ class WorldGenerator:
         self.moisture_noise = OpenSimplex(seed=self.seed + 1)
         
         # Configure noise parameters
-        self.ELEVATION_SCALE = 0.02  # Controls terrain variation
-        self.MOISTURE_SCALE = 0.015  # Controls biome variation
+        self.ELEVATION_SCALE = 0.05  # Increased for more terrain variation
+        self.MOISTURE_SCALE = 0.03   # Increased for more moisture variation
+        
+        # Add some random offset to prevent grid-like patterns
+        self.x_offset = random.uniform(-1000, 1000)
+        self.y_offset = random.uniform(-1000, 1000)
         
         # Biome determination matrix [elevation][moisture]
         self.BIOME_MATRIX = {
@@ -35,41 +39,90 @@ class WorldGenerator:
 
     def _get_elevation(self, x: int, y: int) -> float:
         """Generate elevation value for coordinates"""
-        return self.elevation_noise.noise2(x * self.ELEVATION_SCALE, y * self.ELEVATION_SCALE)
+        # Add offsets and multiple noise layers for more variation
+        primary = self.elevation_noise.noise2((x + self.x_offset) * self.ELEVATION_SCALE, 
+                                            (y + self.y_offset) * self.ELEVATION_SCALE)
+        secondary = self.elevation_noise.noise2((x + self.x_offset) * self.ELEVATION_SCALE * 2, 
+                                              (y + self.y_offset) * self.ELEVATION_SCALE * 2) * 0.5
+        return (primary + secondary) / 1.5
 
     def _get_moisture(self, x: int, y: int) -> float:
         """Generate moisture value for coordinates"""
-        return self.moisture_noise.noise2(x * self.MOISTURE_SCALE, y * self.MOISTURE_SCALE)
+        # Add offsets and multiple noise layers for more variation
+        primary = self.moisture_noise.noise2((x + self.x_offset) * self.MOISTURE_SCALE,
+                                           (y + self.y_offset) * self.MOISTURE_SCALE)
+        secondary = self.moisture_noise.noise2((x + self.x_offset) * self.MOISTURE_SCALE * 2,
+                                             (y + self.y_offset) * self.MOISTURE_SCALE * 2) * 0.5
+        return (primary + secondary) / 1.5
 
     def _determine_biome(self, x: int, y: int) -> BiomeType:
-        """Determine biome based on elevation and moisture"""
+        """Determine biome based on elevation and moisture with some randomization"""
         elevation = self._get_elevation(x, y)
         moisture = self._get_moisture(x, y)
         
-        # Convert noise values to categories
-        elev_category = (
-            'high' if elevation > 0.3 else
-            'low' if elevation < -0.3 else
-            'medium'
-        )
+        # Add slight random variation
+        elevation += random.uniform(-0.1, 0.1)
+        moisture += random.uniform(-0.1, 0.1)
         
-        moist_category = (
-            'wet' if moisture > 0.2 else
-            'dry' if moisture < -0.2 else
-            'medium'
-        )
+        # Convert noise values to categories with more granular thresholds
+        if elevation > 0.4:
+            elev_category = 'high'
+        elif elevation > 0.1:
+            elev_category = 'medium'
+        elif elevation > -0.2:
+            elev_category = 'medium' if random.random() > 0.3 else 'low'
+        else:
+            elev_category = 'low'
+            
+        if moisture > 0.3:
+            moist_category = 'wet'
+        elif moisture > 0:
+            moist_category = 'medium'
+        elif moisture > -0.3:
+            moist_category = 'medium' if random.random() > 0.3 else 'dry'
+        else:
+            moist_category = 'dry'
         
         return self.BIOME_MATRIX[elev_category][moist_category]
 
     def _generate_features(self, biome: BiomeType) -> list:
         """Generate list of features for the location based on biome"""
-        # This is a simple placeholder - would be expanded based on feature specs
         features = []
-        if random.random() < 0.3:  # 30% chance of having a feature
-            if biome == BiomeType.FOREST:
-                features.append({"type": "tree", "variant": "oak"})
-            elif biome == BiomeType.MOUNTAIN:
-                features.append({"type": "rock", "variant": "boulder"})
+        feature_chance = random.random()
+        
+        biome_features = {
+            BiomeType.FOREST: [
+                {"type": "tree", "variant": random.choice(["oak", "pine", "birch", "maple"])},
+                {"type": "bush", "variant": random.choice(["berry", "flower", "thorny"])},
+                {"type": "mushroom", "variant": random.choice(["red", "brown", "spotted"])}
+            ],
+            BiomeType.MOUNTAIN: [
+                {"type": "rock", "variant": random.choice(["boulder", "cliff", "cave"])},
+                {"type": "mineral", "variant": random.choice(["crystal", "ore", "gems"])}
+            ],
+            BiomeType.PLAINS: [
+                {"type": "grass", "variant": random.choice(["tall", "flowering", "wild"])},
+                {"type": "creature", "variant": random.choice(["rabbit", "deer", "bird"])}
+            ],
+            BiomeType.DESERT: [
+                {"type": "cactus", "variant": random.choice(["barrel", "saguaro", "prickly"])},
+                {"type": "dune", "variant": random.choice(["rolling", "steep", "windswept"])}
+            ],
+            BiomeType.SWAMP: [
+                {"type": "water", "variant": random.choice(["pool", "marsh", "bog"])},
+                {"type": "vegetation", "variant": random.choice(["vine", "moss", "reed"])}
+            ],
+            BiomeType.TUNDRA: [
+                {"type": "ice", "variant": random.choice(["formation", "sheet", "crystal"])},
+                {"type": "rock", "variant": random.choice(["frozen", "snow-covered", "weathered"])}
+            ]
+        }
+        
+        # 60% chance of having 1 feature, 30% chance of 2 features
+        if feature_chance < 0.6:
+            features.append(random.choice(biome_features.get(biome, [])))
+        elif feature_chance < 0.9:
+            features.extend(random.sample(biome_features.get(biome, []), 2))
         return features
 
     def _generate_description(self, biome: BiomeType, features: list) -> str:
