@@ -101,8 +101,8 @@ def generate_item_properties(item_type: ItemType, rarity_multiplier: float = 1.0
             "versatility": random.uniform(1, 3)
         },
         ItemType.TREASURE: {
-            "value": random.uniform(10, 100) * rarity_multiplier,
-            "age": random.uniform(100, 1000),
+            "value": f"${round(random.uniform(10, 100) * rarity_multiplier, 2)}",
+            "age": round(random.uniform(100, 1000)),
             "magical": random.random() < 0.5
         }
     }

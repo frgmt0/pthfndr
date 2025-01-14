@@ -91,7 +91,8 @@ class GameManager:
             return f"There is no {item_name} here to take."
 
         # Generate item details
-        description = f"A {item_name} found in the {self.current_game_state.current_biome.value}"
+        location = await self.get_current_location()
+        description = f"A {item_name} found in the {location.biome_type.value}"
         properties = generate_item_properties(item_type)
 
         await Item.create(
