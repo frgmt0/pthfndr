@@ -18,6 +18,7 @@ class GameState(models.Model):
     health = fields.IntField(default=100)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
+    weather = fields.CharField(max_length=20, null=True)  # Current weather
 
     class Meta:
         table = "game_states"

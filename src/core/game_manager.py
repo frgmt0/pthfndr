@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional, Tuple
 from src.models.base import GameState, Location, BiomeType
 from src.core.world import WorldGenerator
+from src.core.weather import WeatherSystem
 from tortoise.exceptions import DoesNotExist
 import random
 
@@ -18,7 +19,8 @@ class GameManager:
             current_position={"x": 0, "y": 0},
             current_biome=BiomeType.PLAINS,  # Starting biome
             inventory={},
-            health=100
+            health=100,
+            weather=WeatherSystem.get_weather(BiomeType.PLAINS, 0)
         )
         return self.current_game_state
 
