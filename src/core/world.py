@@ -6,29 +6,60 @@ from typing import Tuple, Dict, Any
 class WorldGenerator:
     def __init__(self, seed: int = None):
         self.seed = seed or random.randint(0, 1000000)
-        self.noise_gen = OpenSimplex(seed=self.seed)
+        # Create two noise generators for more varied terrain
+        self.elevation_noise = OpenSimplex(seed=self.seed)
+        self.moisture_noise = OpenSimplex(seed=self.seed + 1)
         
         # Configure noise parameters
-        self.SCALE = 0.007  # Controls how zoomed in/out the noise is
-        self.BIOME_THRESHOLDS = {
-            (-1.0, -0.6): BiomeType.TUNDRA,
-            (-0.6, -0.2): BiomeType.MOUNTAIN,
-            (-0.2, 0.0): BiomeType.PLAINS,
-            (0.0, 0.3): BiomeType.FOREST,
-            (0.3, 0.6): BiomeType.SWAMP,
-            (0.6, 1.0): BiomeType.DESERT
+        self.ELEVATION_SCALE = 0.02  # Controls terrain variation
+        self.MOISTURE_SCALE = 0.015  # Controls biome variation
+        
+        # Biome determination matrix [elevation][moisture]
+        self.BIOME_MATRIX = {
+            'high': {
+                'wet': BiomeType.MOUNTAIN,
+                'medium': BiomeType.MOUNTAIN,
+                'dry': BiomeType.DESERT
+            },
+            'medium': {
+                'wet': BiomeType.SWAMP,
+                'medium': BiomeType.FOREST,
+                'dry': BiomeType.PLAINS
+            },
+            'low': {
+                'wet': BiomeType.SWAMP,
+                'medium': BiomeType.PLAINS,
+                'dry': BiomeType.TUNDRA
+            }
         }
 
-    def _get_noise(self, x: int, y: int) -> float:
-        """Generate noise value for coordinates"""
-        return self.noise_gen.noise2(x * self.SCALE, y * self.SCALE)
+    def _get_elevation(self, x: int, y: int) -> float:
+        """Generate elevation value for coordinates"""
+        return self.elevation_noise.noise2(x * self.ELEVATION_SCALE, y * self.ELEVATION_SCALE)
 
-    def _determine_biome(self, noise_val: float) -> BiomeType:
-        """Convert noise value to biome type"""
-        for (min_val, max_val), biome in self.BIOME_THRESHOLDS.items():
-            if min_val <= noise_val <= max_val:
-                return biome
-        return BiomeType.PLAINS  # Default biome
+    def _get_moisture(self, x: int, y: int) -> float:
+        """Generate moisture value for coordinates"""
+        return self.moisture_noise.noise2(x * self.MOISTURE_SCALE, y * self.MOISTURE_SCALE)
+
+    def _determine_biome(self, x: int, y: int) -> BiomeType:
+        """Determine biome based on elevation and moisture"""
+        elevation = self._get_elevation(x, y)
+        moisture = self._get_moisture(x, y)
+        
+        # Convert noise values to categories
+        elev_category = (
+            'high' if elevation > 0.3 else
+            'low' if elevation < -0.3 else
+            'medium'
+        )
+        
+        moist_category = (
+            'wet' if moisture > 0.2 else
+            'dry' if moisture < -0.2 else
+            'medium'
+        )
+        
+        return self.BIOME_MATRIX[elev_category][moist_category]
 
     def _generate_features(self, biome: BiomeType) -> list:
         """Generate list of features for the location based on biome"""
@@ -65,9 +96,18 @@ class WorldGenerator:
 
     def generate_location(self, x: int, y: int) -> Tuple[BiomeType, list, str]:
         """Generate a complete location at the given coordinates"""
-        noise_val = self._get_noise(x, y)
-        biome = self._determine_biome(noise_val)
+        biome = self._determine_biome(x, y)
         features = self._generate_features(biome)
         description = self._generate_description(biome, features)
+        
+        # Add some randomization to descriptions
+        if random.random() < 0.3:  # 30% chance of additional detail
+            time_details = [
+                "The sun hangs low on the horizon.",
+                "A gentle breeze rustles through the area.",
+                "The air is still and quiet here.",
+                "Clouds cast shifting shadows across the landscape."
+            ]
+            description += f" {random.choice(time_details)}"
         
         return biome, features, description
