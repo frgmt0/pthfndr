@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional, Tuple
-from src.models.base import GameState, Location, BiomeType
+from src.models.base import GameState, Location, BiomeType, Item
 from src.core.world import WorldGenerator
 from src.core.weather import WeatherSystem
 from tortoise.exceptions import DoesNotExist
