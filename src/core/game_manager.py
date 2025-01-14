@@ -4,6 +4,8 @@ from src.core.world import WorldGenerator
 from src.core.weather import WeatherSystem
 from src.utils.items import generate_item_name, generate_item_description, get_item_properties
 from src.utils.item_definitions import get_item_definition
+from src.utils.structure_definitions import get_structure_interaction
+from src.utils.resource_definitions import get_resource_interaction
 from tortoise.exceptions import DoesNotExist
 import random
 
@@ -203,8 +205,30 @@ class GameManager:
             location = await self.get_current_location()
             for feature in location.features:
                 if feature["type"] == target and feature["variant"] == variant:
+                    # Check if it's a structure
+                    structure_interaction = get_structure_interaction(
+                        target, 
+                        params.get("interaction", "examine"),
+                        variant,
+                        feature.get("condition")
+                    )
+                    if structure_interaction:
+                        result_description = structure_interaction
+                        break
+                        
+                    # Check if it's a resource
+                    resource_interaction = get_resource_interaction(
+                        target,
+                        params.get("interaction", "examine"),
+                        variant,
+                        feature.get("quality")
+                    )
+                    if resource_interaction:
+                        result_description = resource_interaction
+                        break
+                        
+                    # Fallback for other features
                     result_description = f"You interact with the {variant} {target}."
-                    # Add specific interaction logic here
                     break
                     
         return result_description, state_updates
