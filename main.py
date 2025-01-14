@@ -75,6 +75,26 @@ async def main():
     try:
         # Run test flow
         await test_game_flow()
+        
+        # Test MCTS-based action selection
+        print(f"\n{Fore.GREEN}Testing MCTS action selection...{Style.RESET_ALL}")
+        game_manager = GameManager(seed=12345)
+        game_state = await game_manager.new_game()
+        
+        # Get and execute best actions for a few turns
+        for i in range(3):
+            print(f"\nTurn {i+1}:")
+            best_action = await game_manager.get_best_action()
+            print(f"Selected action: {best_action}")
+            
+            result, updates = await game_manager.process_action(
+                best_action["type"], best_action
+            )
+            print(f"Result: {result}")
+            print(f"Updates: {updates}")
+            
+            location = await game_manager.get_current_location()
+            print(f"New location: ({location.x}, {location.y}) - {location.biome_type}")
     except Exception as e:
         print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
     finally:

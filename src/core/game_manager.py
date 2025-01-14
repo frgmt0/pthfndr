@@ -78,6 +78,12 @@ class GameManager:
             
         return actions
 
+    async def get_best_action(self) -> Dict[str, Any]:
+        """Use MCTS to select the best action"""
+        from src.core.mcts_manager import MCTSManager
+        mcts = MCTSManager(self)
+        return await mcts.select_action(self.current_game_state)
+
     async def process_action(self, action_type: str, params: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         """Process a player action and return the result"""
         if not self.current_game_state:
