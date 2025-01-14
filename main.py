@@ -77,10 +77,36 @@ async def play_game():
                 })
                 print(f"\n{result}")
                 
+            elif command[0] == "inventory":
+                items = await game_manager.get_inventory()
+                if items:
+                    print("\nInventory:")
+                    for item in items:
+                        print(f"- {item['name']} ({item['type']}): {item['description']}")
+                else:
+                    print("\nInventory is empty")
+                    
+            elif command[0] == "take" and len(command) >= 2:
+                item_name = " ".join(command[1:])
+                result = await game_manager.add_item(
+                    item_name,
+                    "treasure",  # Default type, could be made more sophisticated
+                    f"A {item_name} found in the world"
+                )
+                print(f"\n{result}")
+                
+            elif command[0] == "drop" and len(command) >= 2:
+                item_name = " ".join(command[1:])
+                result = await game_manager.drop_item(item_name)
+                print(f"\n{result}")
+                
             else:
                 print("Invalid command. Available commands:")
                 print("- move <direction> [distance]")
                 print("- interact <target> <variant>")
+                print("- inventory")
+                print("- take <item_name>")
+                print("- drop <item_name>")
                 print("- quit")
                 
         except ValueError as e:

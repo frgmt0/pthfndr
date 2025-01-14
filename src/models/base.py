@@ -1,5 +1,14 @@
 from tortoise import fields, models
 from enum import Enum
+from typing import Optional
+
+class ItemType(str, Enum):
+    WEAPON = "weapon"
+    ARMOR = "armor"
+    POTION = "potion"
+    TOOL = "tool"
+    TREASURE = "treasure"
+    KEY = "key"
 
 class BiomeType(str, Enum):
     FOREST = "FRST"
@@ -36,3 +45,15 @@ class Location(models.Model):
     class Meta:
         table = "locations"
         unique_together = (("x", "y"),)
+
+class Item(models.Model):
+    id = fields.IntField(pk=True)
+    name = fields.CharField(max_length=100)
+    item_type = fields.CharEnumField(ItemType)
+    description = fields.TextField()
+    properties = fields.JSONField(default=dict)  # For type-specific properties
+    game_state = fields.ForeignKeyField('models.GameState', related_name='items')
+    created_at = fields.DatetimeField(auto_now_add=True)
+    
+    class Meta:
+        table = "items"

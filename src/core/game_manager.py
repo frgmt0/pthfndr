@@ -55,6 +55,43 @@ class GameManager:
         
         return location
 
+    async def get_inventory(self) -> List[Dict[str, Any]]:
+        """Get current inventory items"""
+        if not self.current_game_state:
+            raise ValueError("No active game state")
+        
+        items = await self.current_game_state.items.all()
+        return [{"name": item.name, "type": item.item_type, "description": item.description} 
+                for item in items]
+
+    async def add_item(self, name: str, item_type: str, description: str, properties: dict = None) -> str:
+        """Add an item to inventory"""
+        if not self.current_game_state:
+            raise ValueError("No active game state")
+            
+        await Item.create(
+            name=name,
+            item_type=item_type,
+            description=description,
+            properties=properties or {},
+            game_state=self.current_game_state
+        )
+        return f"Added {name} to inventory"
+
+    async def drop_item(self, item_name: str) -> str:
+        """Remove an item from inventory"""
+        if not self.current_game_state:
+            raise ValueError("No active game state")
+            
+        item = await Item.get_or_none(
+            game_state=self.current_game_state,
+            name=item_name
+        )
+        if item:
+            await item.delete()
+            return f"Dropped {item_name}"
+        return f"No item named {item_name} in inventory"
+
     async def get_available_actions(self) -> List[Dict[str, Any]]:
         """Get list of available actions at current location"""
         if not self.current_game_state:
