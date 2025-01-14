@@ -16,86 +16,85 @@ async def init_db():
     )
     await Tortoise.generate_schemas()
 
-async def test_game_flow():
-    """Test the game flow with some dummy data"""
-    # Create game manager with fixed seed for reproducible results
-    game_manager = GameManager(seed=12345)
+async def play_game():
+    """Main game loop with user input"""
+    # Create game manager with random seed
+    game_manager = GameManager()
     
-    # Start new game
-    print(f"{Fore.GREEN}Starting new game...{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}Welcome to Pathfinder!{Style.RESET_ALL}")
+    print("Starting new game...")
     game_state = await game_manager.new_game()
-    print(f"Game started with ID: {game_state.id}")
     
-    # Get initial location
-    location = await game_manager.get_current_location()
-    print(f"\n{Fore.CYAN}Current Location:{Style.RESET_ALL}")
-    print(f"Position: ({location.x}, {location.y})")
-    print(f"Biome: {location.biome_type}")
-    print(f"Description: {location.description}")
-    print(f"Weather: {location.weather}")
-    
-    # Get available actions
-    actions = await game_manager.get_available_actions()
-    print(f"\n{Fore.YELLOW}Available Actions:{Style.RESET_ALL}")
-    for action in actions:
-        print(f"- {action['type']}: {action}")
-    
-    # Test movement in each direction
-    directions = ["north", "east", "south", "west"]
-    for direction in directions:
-        print(f"\n{Fore.GREEN}Moving {direction}...{Style.RESET_ALL}")
-        result, updates = await game_manager.process_action("move", {
-            "direction": direction,
-            "distance": 100
-        })
-        print(result)
-        print(f"State updates: {updates}")
-        
-        # Get new location details
+    while True:
+        # Display current location
         location = await game_manager.get_current_location()
-        print(f"New biome: {location.biome_type}")
+        print(f"\n{Fore.CYAN}Current Location:{Style.RESET_ALL}")
+        print(f"Position: ({location.x}, {location.y})")
+        print(f"Biome: {location.biome_type}")
+        print(f"Description: {location.description}")
+        print(f"Weather: {location.weather}")
         
-        # Test feature interaction if any
-        if location.features:
-            feature = location.features[0]
-            print(f"\n{Fore.MAGENTA}Testing interaction...{Style.RESET_ALL}")
-            result, updates = await game_manager.process_action("interact", {
-                "target": feature["type"],
-                "variant": feature["variant"]
-            })
-            print(result)
-    
-    # Save game state
-    await game_manager.save_game()
-    print(f"\n{Fore.GREEN}Game state saved!{Style.RESET_ALL}")
+        # Display available actions
+        actions = await game_manager.get_available_actions()
+        print(f"\n{Fore.YELLOW}Available Actions:{Style.RESET_ALL}")
+        for action in actions:
+            if action["type"] == "move":
+                print(f"- move {action['direction']} [distance]")
+            elif action["type"] == "interact":
+                print(f"- interact {action['target']} {action['variant']}")
+        
+        # Get user input
+        try:
+            command = input(f"\n{Fore.GREEN}What would you like to do? {Style.RESET_ALL}").lower().split()
+            
+            if not command:
+                continue
+                
+            if command[0] == "quit":
+                print("Saving game and exiting...")
+                await game_manager.save_game()
+                break
+                
+            if command[0] == "move" and len(command) >= 2:
+                direction = command[1]
+                distance = int(command[2]) if len(command) > 2 else 100
+                
+                if direction in ["north", "south", "east", "west"]:
+                    result, updates = await game_manager.process_action("move", {
+                        "direction": direction,
+                        "distance": distance
+                    })
+                    print(f"\n{result}")
+                else:
+                    print("Invalid direction. Use: north, south, east, or west")
+                    
+            elif command[0] == "interact" and len(command) >= 3:
+                target = command[1]
+                variant = command[2]
+                result, updates = await game_manager.process_action("interact", {
+                    "target": target,
+                    "variant": variant
+                })
+                print(f"\n{result}")
+                
+            else:
+                print("Invalid command. Available commands:")
+                print("- move <direction> [distance]")
+                print("- interact <target> <variant>")
+                print("- quit")
+                
+        except ValueError as e:
+            print(f"Error: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 async def main():
     # Initialize database
     await init_db()
     
     try:
-        # Run test flow
-        await test_game_flow()
-        
-        # Test MCTS-based action selection
-        print(f"\n{Fore.GREEN}Testing MCTS action selection...{Style.RESET_ALL}")
-        game_manager = GameManager(seed=12345)
-        game_state = await game_manager.new_game()
-        
-        # Get and execute best actions for a few turns
-        for i in range(3):
-            print(f"\nTurn {i+1}:")
-            best_action = await game_manager.get_best_action()
-            print(f"Selected action: {best_action}")
-            
-            result, updates = await game_manager.process_action(
-                best_action["type"], best_action
-            )
-            print(f"Result: {result}")
-            print(f"Updates: {updates}")
-            
-            location = await game_manager.get_current_location()
-            print(f"New location: ({location.x}, {location.y}) - {location.biome_type}")
+        # Start the game loop
+        await play_game()
     except Exception as e:
         print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
     finally:
