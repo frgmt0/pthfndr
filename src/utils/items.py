@@ -77,34 +77,23 @@ def generate_item_description(item_type: ItemType, rarity: str) -> str:
     }
     return template.format(**attributes)
 
-def generate_item_properties(item_type: ItemType, rarity_multiplier: float = 1.0) -> Dict[str, Any]:
-    """Generate properties based on item type and rarity"""
-    base_properties = {
-        ItemType.WEAPON: {
-            "damage": random.uniform(5, 15) * rarity_multiplier,
-            "attack_speed": random.uniform(0.5, 1.5),
-            "durability": random.uniform(50, 100) * rarity_multiplier
-        },
-        ItemType.ARMOR: {
-            "defense": random.uniform(2, 10) * rarity_multiplier,
-            "weight": random.uniform(1.0, 5.0),
-            "durability": random.uniform(50, 100) * rarity_multiplier
-        },
-        ItemType.POTION: {
-            "potency": random.uniform(1, 10) * rarity_multiplier,
-            "duration": random.uniform(10, 60),
-            "side_effects": random.random() < 0.3
-        },
-        ItemType.TOOL: {
-            "efficiency": random.uniform(1, 5) * rarity_multiplier,
-            "durability": random.uniform(30, 80) * rarity_multiplier,
-            "versatility": random.uniform(1, 3)
-        },
-        ItemType.TREASURE: {
-            "value": f"${round(random.uniform(10, 100) * rarity_multiplier, 2)}",
-            "age": round(random.uniform(100, 1000)),
-            "magical": random.random() < 0.5
-        }
-    }
+from .item_definitions import get_item_definition
+
+def get_item_properties(item_name: str, rarity_multiplier: float = 1.0) -> Dict[str, Any]:
+    """Get properties for an item, adjusted by rarity"""
+    item_def = get_item_definition(item_name)
+    if not item_def:
+        return {}
+        
+    # Create a copy of the base properties
+    properties = item_def["properties"].copy()
     
-    return base_properties.get(item_type, {})
+    # Adjust value and other numeric properties based on rarity
+    if "value" in properties:
+        properties["value"] = round(properties["value"] * rarity_multiplier, 2)
+    if "damage" in properties:
+        properties["damage"] = round(properties["damage"] * rarity_multiplier)
+    if "durability" in properties:
+        properties["durability"] = round(properties["durability"] * rarity_multiplier)
+        
+    return properties

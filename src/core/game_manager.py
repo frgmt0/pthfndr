@@ -90,10 +90,14 @@ class GameManager:
         if not item_found:
             return f"There is no {item_name} here to take."
 
-        # Generate item details
+        # Get item details from definitions
+        item_def = get_item_definition(item_name)
+        if not item_def:
+            return f"Unknown item: {item_name}"
+            
         location = await self.get_current_location()
-        description = f"A {item_name} found in the {location.biome_type.value}"
-        properties = generate_item_properties(item_type)
+        description = f"{item_def['description']} (Found in {location.biome_type.value})"
+        properties = get_item_properties(item_name)
 
         await Item.create(
             name=item_name,
