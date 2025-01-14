@@ -3,3 +3,5 @@ asyncpg>=0.27.0
 opensimplex>=0.4.0
 colorama>=0.4.6
 python-dotenv>=0.19.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
