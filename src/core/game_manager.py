@@ -79,22 +79,25 @@ class GameManager:
         item_found = False
         item_type = ItemType.TREASURE  # Default type
         
-        # Check if the item matches any feature
+        # First check if the item exists in definitions
+        item_def = get_item_definition(item_name.title())  # Try with title case
+        if not item_def:
+            item_def = get_item_definition(item_name)  # Try exact match
+            
+        if not item_def:
+            return f"Unknown item: {item_name}"
+
+        # Then check if the item can be found in the current location
         for feature in location.features:
-            if item_name.lower() in feature["variant"].lower() or item_name.lower() in feature["type"].lower():
+            if (item_name.lower() in feature["variant"].lower() or 
+                item_name.lower() in feature["type"].lower() or
+                feature["type"].lower() == "resource"):  # Special handling for resources
                 item_found = True
-                # Determine item type based on feature
-                if feature["type"] in ["weapon", "armor", "potion", "tool"]:
-                    item_type = ItemType(feature["type"])
+                item_type = item_def.get("type", ItemType.TREASURE)
                 break
         
         if not item_found:
             return f"There is no {item_name} here to take."
-
-        # Get item details from definitions
-        item_def = get_item_definition(item_name)
-        if not item_def:
-            return f"Unknown item: {item_name}"
             
         location = await self.get_current_location()
         description = f"{item_def['description']} (Found in {location.biome_type.value})"
