@@ -80,6 +80,15 @@ ITEM_DEFINITIONS = {
             "age": 1000
         },
         "description": "A coin from a long-lost civilization"
+    },
+    "Magic Staff": {
+        "type": ItemType.WEAPON,
+        "properties": {
+            "damage": 15,
+            "magic_power": 10,
+            "value": 75.00
+        },
+        "description": "A staff imbued with magical energy"
     }
 }
 
