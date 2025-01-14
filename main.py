@@ -3,6 +3,7 @@ from tortoise import Tortoise
 import os
 from dotenv import load_dotenv
 from src.core.game_manager import GameManager
+from src.models.base import ItemType
 from colorama import init, Fore, Style
 
 load_dotenv()
