@@ -81,23 +81,22 @@ async def play_game():
             elif command[0] == "inventory":
                 items = await game_manager.get_inventory()
                 if items:
-                    print("\nInventory:")
+                    print(f"\n{Fore.YELLOW}Inventory:{Style.RESET_ALL}")
                     for item in items:
-                        print(f"- {item['name']} ({item['type']}): {item['description']}")
+                        print(f"- {Fore.CYAN}{item['name']}{Style.RESET_ALL}")
+                        print(f"  Type: {item['type']}")
+                        print(f"  Description: {item['description']}")
+                        if item['properties']:
+                            print(f"  Properties:")
+                            for prop, value in item['properties'].items():
+                                print(f"    {prop}: {value}")
                 else:
                     print("\nInventory is empty")
                     
             elif command[0] == "take" and len(command) >= 2:
-                item_type = command[1].upper()
-                rarity = command[2] if len(command) > 2 else "common"
-                try:
-                    result = await game_manager.add_item(
-                        ItemType(item_type),
-                        rarity
-                    )
-                    print(f"\n{result}")
-                except ValueError:
-                    print(f"\nInvalid item type. Available types: {', '.join(t.value for t in ItemType)}")
+                item_name = " ".join(command[1:])
+                result = await game_manager.add_item(item_name)
+                print(f"\n{result}")
                 
             elif command[0] == "drop" and len(command) >= 2:
                 item_name = " ".join(command[1:])

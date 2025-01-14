@@ -62,27 +62,37 @@ class GameManager:
             raise ValueError("No active game state")
         
         items = await self.current_game_state.items.all()
-        return [{"name": item.name, "type": item.item_type, "description": item.description} 
+        return [{"name": item.name, 
+                "type": item.item_type, 
+                "description": item.description,
+                "properties": item.properties} 
                 for item in items]
 
-    async def add_item(self, item_type: ItemType, rarity: str = "common") -> str:
-        """Add a randomly generated item to inventory"""
+    async def add_item(self, item_name: str) -> str:
+        """Add an item to inventory based on name"""
         if not self.current_game_state:
             raise ValueError("No active game state")
 
-        # Calculate rarity multiplier
-        rarity_multipliers = {
-            "common": 1.0,
-            "uncommon": 1.2,
-            "rare": 1.5,
-            "legendary": 2.0
-        }
-        rarity_mult = rarity_multipliers.get(rarity, 1.0)
+        # Get current location features to check if item exists
+        location = await self.get_current_location()
+        item_found = False
+        item_type = ItemType.TREASURE  # Default type
+        
+        # Check if the item matches any feature
+        for feature in location.features:
+            if item_name.lower() in feature["variant"].lower() or item_name.lower() in feature["type"].lower():
+                item_found = True
+                # Determine item type based on feature
+                if feature["type"] in ["weapon", "armor", "potion", "tool"]:
+                    item_type = ItemType(feature["type"])
+                break
+        
+        if not item_found:
+            return f"There is no {item_name} here to take."
 
         # Generate item details
-        name = generate_item_name(item_type)
-        description = generate_item_description(item_type, rarity)
-        properties = generate_item_properties(item_type, rarity_mult)
+        description = f"A {item_name} found in the {self.current_game_state.current_biome.value}"
+        properties = generate_item_properties(item_type)
 
         await Item.create(
             name=name,
