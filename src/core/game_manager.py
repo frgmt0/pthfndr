@@ -39,7 +39,7 @@ class GameManager:
         location = await Location.get_or_none(x=pos["x"], y=pos["y"])
         
         if not location:
-            biome, features, description = self.world_generator.generate_location(
+            biome, features, description, weather = self.world_generator.generate_location(
                 pos["x"], pos["y"]
             )
             location = await Location.create(
@@ -47,7 +47,8 @@ class GameManager:
                 y=pos["y"],
                 biome_type=biome,
                 features=features,
-                description=description
+                description=description,
+                weather=weather
             )
         
         return location

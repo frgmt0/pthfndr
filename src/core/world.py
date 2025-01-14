@@ -1,5 +1,6 @@
 from opensimplex import OpenSimplex
 from src.models.base import BiomeType, Location
+from src.core.weather import WeatherSystem, WeatherType
 import random
 from typing import Tuple, Dict, Any
 
@@ -162,7 +163,7 @@ class WorldGenerator:
             features.extend(random.sample(biome_features.get(biome, []), 4))
         return features
 
-    def _generate_description(self, biome: BiomeType, features: list) -> str:
+    def _generate_description(self, biome: BiomeType, features: list, weather: WeatherType) -> str:
         """Generate descriptive text for the location"""
         base_desc = {
             BiomeType.FOREST: "Dense trees surround you, their branches creating a natural canopy overhead.",
@@ -184,20 +185,27 @@ class WorldGenerator:
                 
         return description
 
-    def generate_location(self, x: int, y: int) -> Tuple[BiomeType, list, str]:
+    def generate_location(self, x: int, y: int) -> Tuple[BiomeType, list, str, str]:
         """Generate a complete location at the given coordinates"""
         biome = self._determine_biome(x, y)
+        elevation = self._get_elevation(x, y)
+        weather = WeatherSystem.get_weather(biome, elevation)
         features = self._generate_features(biome)
-        description = self._generate_description(biome, features)
+        description = self._generate_description(biome, features, weather)
         
-        # Add some randomization to descriptions
-        if random.random() < 0.3:  # 30% chance of additional detail
-            time_details = [
-                "The sun hangs low on the horizon.",
-                "A gentle breeze rustles through the area.",
-                "The air is still and quiet here.",
-                "Clouds cast shifting shadows across the landscape."
-            ]
-            description += f" {random.choice(time_details)}"
+        # Add weather description
+        weather_descriptions = {
+            WeatherType.CLEAR: "The sky is clear and bright.",
+            WeatherType.CLOUDY: "Gray clouds drift overhead.",
+            WeatherType.RAIN: "A steady rain falls from above.",
+            WeatherType.STORM: "Thunder rumbles as storm clouds loom.",
+            WeatherType.SNOW: "Snowflakes drift gently from the sky.",
+            WeatherType.BLIZZARD: "Howling winds drive snow through the air.",
+            WeatherType.SANDSTORM: "Sand whips through the air in stinging clouds.",
+            WeatherType.FOG: "A thick fog limits visibility.",
+            WeatherType.MISTY: "A light mist hangs in the air."
+        }
         
-        return biome, features, description
+        description += f" {weather_descriptions[weather]}"
+        
+        return biome, features, description, weather

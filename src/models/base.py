@@ -29,6 +29,7 @@ class Location(models.Model):
     biome_type = fields.CharEnumField(BiomeType)
     description = fields.TextField()
     features = fields.JSONField()
+    weather = fields.CharField(max_length=20, null=True)  # Current weather
     discovered = fields.BooleanField(default=False)
     
     class Meta:
