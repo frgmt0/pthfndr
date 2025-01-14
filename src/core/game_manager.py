@@ -95,13 +95,13 @@ class GameManager:
         properties = generate_item_properties(item_type)
 
         await Item.create(
-            name=name,
+            name=item_name,
             item_type=item_type,
             description=description,
             properties=properties,
             game_state=self.current_game_state
         )
-        return f"Added {name} to inventory"
+        return f"Added {item_name} to inventory"
 
     async def drop_item(self, item_name: str) -> str:
         """Remove an item from inventory"""
