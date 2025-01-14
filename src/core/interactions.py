@@ -1,6 +1,6 @@
 from typing import Dict, Any, Tuple, List
 from src.utils.structure_definitions import get_structure_interaction
-from src.utils.resource_definitions import get_resource_interaction
+from src.utils.resource_definitions import get_resource_interaction, get_resource_definition
 from colorama import Fore, Style
 
 class InteractionManager:
