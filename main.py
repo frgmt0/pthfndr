@@ -32,6 +32,7 @@ async def test_game_flow():
     print(f"Position: ({location.x}, {location.y})")
     print(f"Biome: {location.biome_type}")
     print(f"Description: {location.description}")
+    print(f"Weather: {location.weather}")
     
     # Get available actions
     actions = await game_manager.get_available_actions()
