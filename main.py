@@ -87,13 +87,16 @@ async def play_game():
                     print("\nInventory is empty")
                     
             elif command[0] == "take" and len(command) >= 2:
-                item_name = " ".join(command[1:])
-                result = await game_manager.add_item(
-                    item_name,
-                    "treasure",  # Default type, could be made more sophisticated
-                    f"A {item_name} found in the world"
-                )
-                print(f"\n{result}")
+                item_type = command[1].upper()
+                rarity = command[2] if len(command) > 2 else "common"
+                try:
+                    result = await game_manager.add_item(
+                        ItemType(item_type),
+                        rarity
+                    )
+                    print(f"\n{result}")
+                except ValueError:
+                    print(f"\nInvalid item type. Available types: {', '.join(t.value for t in ItemType)}")
                 
             elif command[0] == "drop" and len(command) >= 2:
                 item_name = " ".join(command[1:])

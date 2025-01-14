@@ -1,7 +1,8 @@
 from typing import List, Dict, Any, Optional, Tuple
-from src.models.base import GameState, Location, BiomeType, Item
+from src.models.base import GameState, Location, BiomeType, Item, ItemType
 from src.core.world import WorldGenerator
 from src.core.weather import WeatherSystem
+from src.utils.items import generate_item_name, generate_item_description, generate_item_properties
 from tortoise.exceptions import DoesNotExist
 import random
 
@@ -64,16 +65,30 @@ class GameManager:
         return [{"name": item.name, "type": item.item_type, "description": item.description} 
                 for item in items]
 
-    async def add_item(self, name: str, item_type: str, description: str, properties: dict = None) -> str:
-        """Add an item to inventory"""
+    async def add_item(self, item_type: ItemType, rarity: str = "common") -> str:
+        """Add a randomly generated item to inventory"""
         if not self.current_game_state:
             raise ValueError("No active game state")
-            
+
+        # Calculate rarity multiplier
+        rarity_multipliers = {
+            "common": 1.0,
+            "uncommon": 1.2,
+            "rare": 1.5,
+            "legendary": 2.0
+        }
+        rarity_mult = rarity_multipliers.get(rarity, 1.0)
+
+        # Generate item details
+        name = generate_item_name(item_type)
+        description = generate_item_description(item_type, rarity)
+        properties = generate_item_properties(item_type, rarity_mult)
+
         await Item.create(
             name=name,
             item_type=item_type,
             description=description,
-            properties=properties or {},
+            properties=properties,
             game_state=self.current_game_state
         )
         return f"Added {name} to inventory"
