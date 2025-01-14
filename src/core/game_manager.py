@@ -205,30 +205,58 @@ class GameManager:
             location = await self.get_current_location()
             for feature in location.features:
                 if feature["type"] == target and feature["variant"] == variant:
-                    # Check if it's a structure
+                    interaction_type = params.get("interaction", "examine")
+                    
+                    # Generate default interaction messages based on feature type
+                    default_interactions = {
+                        "fish": {
+                            "examine": f"You watch the {variant} fish swimming.",
+                            "catch": f"You try to catch the {variant} fish.",
+                            "feed": f"You throw some food to the {variant} fish."
+                        },
+                        "creature": {
+                            "examine": f"You observe the {variant} carefully.",
+                            "follow": f"You attempt to follow the {variant}.",
+                            "call": f"You try to call the {variant} over."
+                        },
+                        "water": {
+                            "examine": f"You look at the {variant} water.",
+                            "drink": f"You take a drink from the {variant} water.",
+                            "swim": f"You wade into the {variant} water."
+                        }
+                    }
+                    
+                    # First try structure definitions
                     structure_interaction = get_structure_interaction(
                         target, 
-                        params.get("interaction", "examine"),
+                        interaction_type,
                         variant,
                         feature.get("condition")
                     )
-                    if structure_interaction:
+                    if structure_interaction != "You cannot interact with this structure that way.":
                         result_description = structure_interaction
                         break
-                        
-                    # Check if it's a resource
+                    
+                    # Then try resource definitions
                     resource_interaction = get_resource_interaction(
                         target,
-                        params.get("interaction", "examine"),
+                        interaction_type,
                         variant,
                         feature.get("quality")
                     )
-                    if resource_interaction:
+                    if resource_interaction != "You cannot interact with this resource that way.":
                         result_description = resource_interaction
                         break
-                        
-                    # Fallback for other features
-                    result_description = f"You interact with the {variant} {target}."
+                    
+                    # Finally try default interactions
+                    if target in default_interactions:
+                        result_description = default_interactions[target].get(
+                            interaction_type,
+                            f"You {interaction_type} the {variant} {target}."
+                        )
+                    else:
+                        # Generic fallback
+                        result_description = f"You {interaction_type} the {variant} {target}."
                     break
                     
         return result_description, state_updates
