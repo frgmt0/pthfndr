@@ -2,7 +2,8 @@ from typing import List, Dict, Any, Optional, Tuple
 from src.models.base import GameState, Location, BiomeType, Item, ItemType
 from src.core.world import WorldGenerator
 from src.core.weather import WeatherSystem
-from src.utils.items import generate_item_name, generate_item_description, generate_item_properties
+from src.utils.items import generate_item_name, generate_item_description, get_item_properties
+from src.utils.item_definitions import get_item_definition
 from tortoise.exceptions import DoesNotExist
 import random
 
