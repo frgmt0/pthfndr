@@ -2,8 +2,6 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are currently being supported with security updates.
-
 | Version | Supported          |
 | ------- | ------------------ |
 | 0.1.x   | :white_check_mark: |
@@ -14,9 +12,9 @@ We take the security of Pathfinder seriously. If you believe you have found a se
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to [security@yourdomain.com](mailto:security@yourdomain.com).
+Instead, please report them via email to [security@frgmt.xyz](mailto:security@frgmt.xyz).
 
-You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+You should receive a response within 48-72 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 

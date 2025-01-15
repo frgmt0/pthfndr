@@ -21,7 +21,7 @@ Pathfinder is an advanced text adventure engine that creates infinite, procedura
 ## Installation
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/pthfndr.git
+git clone https://github.com/frgmt0/pthfndr.git
 cd pthfndr
 ```
 
@@ -30,10 +30,19 @@ cd pthfndr
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
+Or use `uv`
+```bash
+uv venv
+source venv/bin/activate
+```
 
 3. Install dependencies:
 ```bash
 pip install -r requirements.txt
+```
+Or use `uv`
+```bash
+uv pip install -r requirements.txt
 ```
 
 4. Set up the database:
