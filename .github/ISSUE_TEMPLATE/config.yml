@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Game Documentation
+    url: https://github.com/frgmt0/pthfndr/tree/main/docs
+    about: Check our documentation before creating an issue
+  - name: Community Guidelines
+    url: https://github.com/frgmt0/pthfndr/blob/main/COMMUNITY_GUIDELINES.md
+    about: Please read our community guidelines
